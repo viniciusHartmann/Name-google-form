@@ -8,7 +8,8 @@ export default function App() {
   const handleQuantidadeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const qtd = parseInt(e.target.value) || 0;
     setQuantidade(qtd);
-    setNomes(Array(qtd).fill('')); // Cria um array de strings vazias com a quantidade informada
+    setNomes(Array(qtd).fill(''));
+    setMensagem('');
   };
 
   const handleNomeChange = (index: number, value: string) => {
@@ -25,65 +26,110 @@ export default function App() {
     }
 
     try {
-      const response = await fetch('https://script.google.com/macros/s/AKfycbwLjGzE-bnDtF7M1oa2DUHeuMlNfzMERmOosVYc-ujY2a_wuHyU9CSGiYN2YQYstQTVhw/exec', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ nomes }) // Enviando o array de nomes
-      });
+      const response = await fetch(
+        'https://script.google.com/macros/s/AKfycby5W356U4FOgarfr5NBYi06GqaJeNCjC3yqHD2cwLZ18vPa59O-HAGZdw6taIcdSOu4/exec',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ nomes }),
+        }
+      );
 
       const data = await response.json();
-
-      if (response.ok) {
-        setMensagem('Nomes enviados com sucesso!');
+      if (response.ok && data.status === 'sucesso') {
+        setMensagem('✅ Nomes enviados com sucesso!');
         setQuantidade(0);
         setNomes([]);
       } else {
-        setMensagem('Erro: ' + data.message);
+        setMensagem('❌ Erro: ' + (data.message || 'Erro desconhecido.'));
       }
     } catch (error) {
       console.error('Erro:', error);
-      setMensagem('Erro ao enviar.');
+      setMensagem('❌ Erro ao enviar.');
     }
   };
 
   return (
-    <div style={{ padding: '20px' }}>
+    <div style={{
+      minHeight: '100vh',
+      width: '100%',
+      backgroundColor: '#ffffff',
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'flex-start',
+      padding: '20px',
+      boxSizing: 'border-box',
+      overflowY: 'auto'
+    }}>
       <div>
-        <label>
-          Quantidade de Pessoas:
+        <h2 style={{ textAlign: 'center', marginBottom: '20px', color: 'black' }}>Cadastro de Nomes</h2>
+
+        <div style={{ marginBottom: '15px' }}>
+          <label style={{ marginBottom: '5px' }}>
+            Quantidade de Pessoas:
+          </label>
           <input
             type="number"
             min="0"
             value={quantidade}
             onChange={handleQuantidadeChange}
-            style={{ marginLeft: '10px', marginRight: '10px' }}
+            style={{
+              width: '100%',
+              padding: '10px',
+              fontSize: '16px',
+              boxSizing: 'border-box'
+            }}
           />
-        </label>
-      </div>
+        </div>
 
-      {nomes.map((nome, index) => (
-        <div key={index} style={{ marginTop: '10px' }}>
-          <label>
-            Nome {index + 1}:
+        {nomes.map((nome, index) => (
+          <div key={index} style={{ marginBottom: '15px' }}>
+            <label style={{ display: 'block', marginBottom: '5px' }}>
+              Nome {index + 1}:
+            </label>
             <input
               type="text"
               value={nome}
               onChange={(e) => handleNomeChange(index, e.target.value)}
-              style={{ marginLeft: '10px' }}
+              placeholder={`Digite o nome ${index + 1}`}
+              style={{
+                width: '100%',
+                padding: '10px',
+                fontSize: '16px',
+                boxSizing: 'border-box'
+              }}
             />
-          </label>
-        </div>
-      ))}
+          </div>
+        ))}
 
-      {nomes.length > 0 && (
-        <div style={{ marginTop: '20px' }}>
-          <button onClick={handleEnviar}>Enviar</button>
-        </div>
-      )}
+        {nomes.length > 0 && (
+          <div style={{ textAlign: 'center', marginTop: '20px' }}>
+            <button
+              onClick={handleEnviar}
+              style={{
+                padding: '12px 24px',
+                backgroundColor: '#007bff',
+                color: '#fff',
+                fontSize: '16px',
+                border: 'none',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                width: '100%'
+              }}
+            >
+              Enviar
+            </button>
+          </div>
+        )}
 
-      <p>{mensagem}</p>
-    </div>
+        {mensagem && (
+          <p style={{ marginTop: '20px', textAlign: 'center', color: '#333' }}>
+            {mensagem}
+          </p>
+        )}
+      </div>
+    </div >
   );
 }
